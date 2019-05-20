@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1552003633579.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "AB61C0CB",
+    "lastKnownWriteTime" : 1552004532,
+    "last_content_update" : 1552004532,
+    "path" : "G:/r_scripts/little_snake/little_snake_v1/5 - run_prediction.Rmd",
+    "project_path" : "5 - run_prediction.Rmd",
+    "properties" : {
+        "cursorPosition" : "88,51",
+        "scrollLine" : "0"
+    },
+    "relative_order" : 1,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

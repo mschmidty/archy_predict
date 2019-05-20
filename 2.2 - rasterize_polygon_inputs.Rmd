@@ -1,0 +1,64 @@
+---
+title: "Convert Polygons to Raster"
+author: "Michael Schmidt"
+date: "March 4, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Load Libraries
+```{r}
+library(raster)
+library(sf)
+```
+
+```{r}
+crop_layer<-"inputs/shape/extent/little_snake_fo_extent"
+raster_path<-"inputs/raster/Elevation_100.tif"
+
+dem<-raster(raster_path)%>%
+  crop(extent(st_read(dsn=dirname(crop_layer),  basename(crop_layer))))
+```
+
+
+
+```{r}
+rasterize_polygons<-function(list_item, path_to_items, crop_raster, output_path){
+  # load file to be rasterized and crop file to be rasterized to extent of crop_layer
+  t<-st_crop(st_read(path_to_items, list_item[1]), extent(crop_raster))
+
+  #Rasterize by file specified 
+  r<-rasterize(as(t, "Spatial"), crop_raster, field=list_item[2])
+  ##arch_sites<-rasterize(as(t, "Spatial"), clip_raster, field="SITE_")
+  #Write to ouput file path
+  writeRaster(r, paste0(output_path, "/", list_item[1], "_", list_item[2], ".grd"), overwrite=T)
+}
+
+```
+
+## Inputs for function
+```{r}
+## name of layer and "field we want"
+name_and_layer<-list(
+  c("state_wide_geology_v2", "GEOLOGY_la"), 
+  c("statewide_vegetation", "VEGETATION")
+  )
+crop_raster<-dem
+path_to_poly<-"inputs/shape/cover_poly"
+output_path<-"outputs/final_layers"
+
+```
+
+## loop over function for each list item
+```{r}
+lapply(name_and_layer, rasterize_polygons, path_to_poly, crop_raster, output_path)
+```
+
+
+
+
+

@@ -1,0 +1,90 @@
+---
+title: "Functions to merge rasters and run prediction"
+author: "Michael Schmidt"
+date: "February 25, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Step 1 - Load libraries
+```{r}
+library(raster)
+library(sf)
+library(randomForest)
+library(tidyverse)
+library(tools)
+```
+
+## Step 2 - Function make raster dataset from final layers rasters
+```{r}
+make_raster_dataset<-function(
+  folder_of_rasters, 
+  path_to_dem, 
+  path_to_model_extent
+  ){
+  
+  # Combine, all datasets
+  
+  ## Read fames from folder
+  names_model_inputs<-base::list.files(folder_of_rasters)%>%
+    tools::file_path_sans_ext()%>%
+    base::unique()
+  
+  # Read in clip raster
+  #Note# Might want to make this optional. 
+  clip_raster<-raster(path_to_dem)%>%
+    crop(extent(st_read(dirname(path_to_model_extent), basename(path_to_model_extent))))
+  
+  # read raster and clip it, return it to a list. 
+  read_raster<- function(file_name){
+    t<-brick(paste0(folder_of_rasters,"/", file_name))
+    t2<-crop(t, extent(clip_raster))%>%
+      ## Clip the tile to the shapefile geometry
+      mask(clip_raster)
+    names(t2)<-file_name
+    return(t2)
+    
+    rm(t, t2)
+  }
+  
+  # Call read_raster function for each raster in a list. 
+  variable_list<-lapply(names_model_inputs, read_raster)
+  
+  ## merge all rasters in the list. 
+  r<-do.call(stack, variable_list)
+  r_clipped<-crop(r, extent(clip_raster))%>%
+    ## Clip the tile to the shapefile geometry
+    mask(clip_raster)
+  
+  return(r_clipped)
+  
+  # Remove objects we don't need. 
+  rm(r, variable_list, r_clipped)
+}
+```
+
+
+
+## Step 3- Run Function to create prediction raster
+```{r}
+input_folder_path<-"outputs/final_layers"
+path_to_extent<-"inputs/shape/extent/little_snake_fo_extent"
+path_to_dem<-"inputs/raster/Elevation_100.tif"
+  
+predict_raster<-make_raster_dataset(input_folder_path,  path_to_dem, path_to_extent)
+```
+
+
+Step 4 - Load Model and run raster
+```{r}
+model<-"outputs/model_runs/fit_500_training_set_all_03072019.rds"
+ # make prediction
+  fit_model<-readRDS(model)
+  prediction<-raster::predict(predict_raster, fit_model, type="prob", na.rm=TRUE)
+  writeRaster(prediction, paste0("outputs/model_runs/prediction/", file_path_sans_ext(basename(model)), ".tif"), overwrite=FALSE)
+  rm(prediction, fit_model, r_clipped, clip_raster)
+```

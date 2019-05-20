@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1558390530960.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1749811848",
+    "id" : "6E20692E",
+    "lastKnownWriteTime" : 1558390590,
+    "last_content_update" : 1558390590025,
+    "path" : "G:/r_scripts/little_snake/little_snake_v1/4 - run_random_forests.Rmd",
+    "project_path" : "4 - run_random_forests.Rmd",
+    "properties" : {
+        "cursorPosition" : "67,28",
+        "scrollLine" : "41"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

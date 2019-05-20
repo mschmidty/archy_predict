@@ -1,0 +1,60 @@
+---
+title: "NHDFloline Subset"
+author: "Michael Schmidt"
+date: "February 27, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Step 1 - Load Libraries 
+If the libraries are not loaded on your computer you may have to run `install.packages("libraryName")`
+```{r}
+library(sf)
+library(tidyverse)
+```
+
+## Step 1.2 - Assign variable values
+```{r}
+## No file extention for shapefiles to be read in
+extent_file_path<-"inputs/shape/extent/little_snake_fo_extent"
+flowlines_file_path<-"inputs/shape/flowlines/nhd_flowline_2018"
+
+##where you want the function to put the files when they have been created. THIS FOLDER MUST ALREADY EXIST. 
+output_file_path<-"inputs/shape/distance"
+```
+
+## Step 2 - Read in files and crop to field office extent
+```{r}
+
+
+flowlines<-st_read(dirname(flowlines_file_path), basename(flowlines_file_path))
+crop_layer<-st_read(dirname(extent_file_path), basename(extent_file_path))
+flowlines_sub<-st_crop(st_zm(flowlines), st_bbox(crop_layer))
+```
+
+## Step 3 - input a list with key value pairs of FCode number and related name for function below. 
+```{r}
+flowpath_type_list<-list(c(55800, "artificial"), c(46003, "intermittent"), c(46006, "perennial"))
+```
+
+## Step 4 - Add function to memory that subsets base on 
+```{r}
+stream_parser<-function(stream_id, stream_shape, output_path){
+  stream_subset<-stream_shape%>%
+    select(FCode)%>%
+    filter(FCode==as.numeric(stream_id[1]))
+  
+  st_write(stream_subset, paste0(output_path,"/","nhd_flowline_", stream_id[2], ".shp"))
+}
+```
+
+
+## Step 5 - Call function
+```{r}
+lapply(flowpath_type_list, stream_parser, flowlines_sub, output_file_path)
+```
+
+## Step 5 - Check to see if they are in the folder you specified.

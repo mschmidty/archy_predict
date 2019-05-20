@@ -1,0 +1,60 @@
+---
+title: "Create Terrain"
+author: "Michael Schmidt"
+date: "February 28, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Load Libraries
+```{r}
+library(raster)
+library(sf)
+```
+
+## Read And crop DEM to 
+```{r}
+dem_file_path<-"inputs/raster/Elevation_100.tif"
+shape_file_extent_folder<-"inputs"
+shape_file_extent_name<-"little_snake_fo_extent"
+
+save_file<-"outputs/final_layers"
+
+
+dem<-raster(dem_file_path)%>%
+  crop(extent(st_read(shape_file_extent_folder, shape_file_extent_name)))
+
+names(dem)<-"elevation"
+
+writeRaster(dem, paste0(save_file,"/",names(dem),".grd"))
+```
+
+
+## Create Terrain
+```{r}
+dem_calc_list<-c("slope", "aspect", "TPI", "TRI", "roughness", "flowdir")
+
+
+calc_terrain<-function(calculation, output_file_path, dem){
+  
+  if(calculation == "slope" | calculation=="aspect"){
+    t<-terrain(dem, opt=calculation, unit="degrees", neighbors=8)
+  }else{
+    t<-terrain(dem, opt=calculation)
+  }
+  
+  writeRaster(t, paste0(output_file_path,"/", calculation ,".grd"), overwrite=TRUE)
+}
+```
+
+call function
+```{r}
+lapply(dem_calc_list, calc_terrain, save_file, dem)
+```
+
+
+
